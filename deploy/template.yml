@@ -5,6 +5,9 @@ Parameters:
   URI:
     Type: String
     Description: The URI used to name resources [projectName-env-gitUsername]
+  Cron:
+    Type: String
+    Description: The cron to trigger lambda
   Env:
     Type: String
     Default: dev
@@ -54,7 +57,7 @@ Resources:
     DeletionPolicy: Delete
     UpdateReplacePolicy: Retain
     Properties:
-      LogGroupName: !Sub '${URI}-lambda-logs'
+      LogGroupName: !Sub '/aws/lambda/${URI}-lambda'
       RetentionInDays: 14
 
   ScheduledRule:
@@ -62,7 +65,7 @@ Resources:
     Properties:
       Name: !Sub ${URI}-events-rule
       Description: 'ScheduledRule'
-      ScheduleExpression: 'rate(5 minutes)'
+      ScheduleExpression: !Ref Cron
       State: 'ENABLED'
       Targets:
         - Arn: !GetAtt

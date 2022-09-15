@@ -21,7 +21,8 @@ fi
 # SAM DELETE
 sam delete \
 	--stack-name ${URI} \
-	--no-prompts
+	--no-prompts \
+	--region ${AWS_DEFAULT_REGION}
 
 # DELETE ECR
 aws ecr delete-repository --repository-name ${URI}-ecr

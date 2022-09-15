@@ -16,15 +16,15 @@ else
 fi
 
 # SAM BUILD AND DEPLOY
-Parameters="ParameterKey=URI,ParameterValue=${URI} ParameterKey=Env,ParameterValue=${Env}"
+Parameters="ParameterKey=URI,ParameterValue=${URI} ParameterKey=Env,ParameterValue=${Env} ParameterKey=Cron,ParameterValue='${Cron}'"
 
-sam build -t ./template.yml --parameter-overrides ${Parameters}
+sam build -t ./template.yml --parameter-overrides "${Parameters}"
 sam deploy \
 	--template-file .aws-sam/build/template.yaml \
 	--stack-name ${URI} \
 	--disable-rollback \
 	--resolve-s3 \
 	--image-repositories Lambda=${LambdaECR} \
-	--parameter-overrides ${Parameters} \
+	--parameter-overrides "${Parameters}" \
 	--capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
 	--tags project=${Project} env=${Env} creator=${GitUsername}
