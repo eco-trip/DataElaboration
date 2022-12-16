@@ -1,6 +1,5 @@
 {
   "name": "data-elaboration",
-  "version": "0.0.0",
   "author": "Matteo Brocca, Alan Mancini, Alberto Marfoglia",
   "description": "Data Elaboration Service",
   "devDependencies": {
