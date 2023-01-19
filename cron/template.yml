@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  URI:
+    Type: String
+    Description: The URI used to name resources [projectName-env-gitUsername]
+  Cron:
+    Type: String
+    Description: The cron to trigger lambda
+  Env:
+    Type: String
+    Default: dev
+    Description: The environment variables for Lambda
+    AllowedValues:
+      - dev
+      - production
+      - staging
+
+Resources:
+  LambdaCron:
+    Type: 'AWS::Serverless::Function'
+    DependsOn: LamdaLogGroup
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: './'
+      DockerTag: nodejs14.x-v1
+    Properties:
+      FunctionName: !Sub '${URI}-lambda-cron'
+      PackageType: Image
+      Timeout: 20
+      MemorySize: 1024
+      Policies:
+        - AWSLambdaExecute
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:BatchGet*
+                - dynamodb:DescribeStream
+                - dynamodb:DescribeTable
+                - dynamodb:Get*
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:BatchWrite*
+                - dynamodb:CreateTable
+                - dynamodb:Delete*
+                - dynamodb:Update*
+                - dynamodb:PutItem
+              Resource: '*'
+      Environment:
+        Variables:
+          Env: !Ref Env
+
+  LamdaLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${URI}-lambda-cron'
+      RetentionInDays: 14
+
+  ScheduledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${URI}-events-rule
+      Description: 'ScheduledRule'
+      ScheduleExpression: !Ref Cron
+      State: 'ENABLED'
+      Targets:
+        - Arn: !GetAtt
+            - LambdaCron
+            - Arn
+          Id: !Sub '${URI}-target'
+
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LambdaCron
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt
+        - ScheduledRule
+        - Arn

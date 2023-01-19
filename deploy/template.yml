@@ -16,69 +16,37 @@ Parameters:
       - dev
       - production
       - staging
+  Url:
+    Type: String
+    Description: Url for Data Elaboration Api
+  AcmArn:
+    Type: String
+    Description: The ARN of the ssl certificate genereted on ACM
+  HostedZoneId:
+    Type: String
+    Description: Hosted zone Id on route 53
 
 Resources:
-  Lambda:
-    Type: 'AWS::Serverless::Function'
-    DependsOn: LamdaLogGroup
-    Metadata:
-      Dockerfile: Dockerfile
-      DockerContext: '../'
-      DockerTag: nodejs14.x-v1
-    Properties:
-      FunctionName: !Sub '${URI}-lambda'
-      PackageType: Image
-      Timeout: 20
-      MemorySize: 1024
-      Policies:
-        - AWSLambdaExecute
-        - Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - dynamodb:BatchGet*
-                - dynamodb:DescribeStream
-                - dynamodb:DescribeTable
-                - dynamodb:Get*
-                - dynamodb:Query
-                - dynamodb:Scan
-                - dynamodb:BatchWrite*
-                - dynamodb:CreateTable
-                - dynamodb:Delete*
-                - dynamodb:Update*
-                - dynamodb:PutItem
-              Resource: '*'
-      Environment:
-        Variables:
-          Env: !Ref Env
-
-  LamdaLogGroup:
-    Type: 'AWS::Logs::LogGroup'
+  DataElaborationCron:
+    Type: AWS::Serverless::Application
     DeletionPolicy: Delete
     UpdateReplacePolicy: Retain
     Properties:
-      LogGroupName: !Sub '/aws/lambda/${URI}-lambda'
-      RetentionInDays: 14
+      Location: ../cron/template.yml
+      Parameters:
+        URI: !Ref URI
+        Cron: !Ref Cron
+        Env: !Ref Env
 
-  ScheduledRule:
-    Type: AWS::Events::Rule
+  DataElaborationApi:
+    Type: AWS::Serverless::Application
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
     Properties:
-      Name: !Sub ${URI}-events-rule
-      Description: 'ScheduledRule'
-      ScheduleExpression: !Ref Cron
-      State: 'ENABLED'
-      Targets:
-        - Arn: !GetAtt
-            - Lambda
-            - Arn
-          Id: !Sub '${URI}-target'
-
-  PermissionForEventsToInvokeLambda:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref Lambda
-      Action: 'lambda:InvokeFunction'
-      Principal: 'events.amazonaws.com'
-      SourceArn: !GetAtt
-        - ScheduledRule
-        - Arn
+      Location: ../api/template.yml
+      Parameters:
+        URI: !Ref URI
+        Env: !Ref Env
+        Url: !Ref Url
+        AcmArn: !Ref AcmArn
+        HostedZoneId: !Ref HostedZoneId

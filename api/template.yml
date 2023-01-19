@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  URI:
+    Type: String
+    Description: The URI used to name resources [projectName-env-gitUsername]
+  Env:
+    Type: String
+    Default: dev
+    Description: The environment variables for Lambda
+    AllowedValues:
+      - dev
+      - production
+      - staging
+  Url:
+    Type: String
+    Description: Url for Data Elaboration Api
+  AcmArn:
+    Type: String
+    Description: The ARN of the ssl certificate genereted on ACM
+  HostedZoneId:
+    Type: String
+    Description: Hosted zone Id on route 53
+
+Resources:
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Ref URI
+      StageName: !Ref Env
+      Cors:
+        AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+      Domain:
+        DomainName: !Ref Url
+        CertificateArn: !Ref AcmArn
+        EndpointConfiguration: EDGE
+        Route53:
+          HostedZoneId: !Ref HostedZoneId
+
+  LambdaApi:
+    Type: 'AWS::Serverless::Function'
+    DependsOn: LamdaApiLogGroup
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: '../api/'
+      DockerTag: nodejs14.x-v1
+    Properties:
+      FunctionName: !Sub '${URI}-lambda-api'
+      PackageType: Image
+      Timeout: 20
+      MemorySize: 1024
+      Policies:
+        - AWSLambdaExecute
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:BatchGet*
+                - dynamodb:DescribeStream
+                - dynamodb:DescribeTable
+                - dynamodb:Get*
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:BatchWrite*
+                - dynamodb:CreateTable
+                - dynamodb:Delete*
+                - dynamodb:Update*
+                - dynamodb:PutItem
+              Resource: '*'
+      Environment:
+        Variables:
+          Env: !Ref Env
+      Events:
+        APIEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /
+            Method: GET
+
+  LamdaApiLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${URI}-lambda-api'
+      RetentionInDays: 14

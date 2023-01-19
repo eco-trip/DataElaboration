@@ -15,8 +15,19 @@ else
 	echo "ECR EXIST: ${LambdaECR}"
 fi
 
+# GET SECTRETS
+AcmArn=$(echo ${Secrets} | jq .SecretString | jq -rc . | jq -rc '.AcmArn')
+HostedZoneId=$(echo ${Secrets} | jq .SecretString | jq -rc . | jq -rc '.HostedZoneId')
+
+# GET URL FROM S3 AND SET VARIABLES
+aws s3 cp ${Urls} ./urls.json
+Url=$(cat urls.json | jq '."data-elaboration".'${Env} | tr -d '"')
+if [ "$Env" = "dev" ]; then
+	Url=$(echo ${Url/__username__/$GitUsername})
+fi
+
 # SAM BUILD AND DEPLOY
-Parameters="ParameterKey=URI,ParameterValue=${URI} ParameterKey=Env,ParameterValue=${Env} ParameterKey=Cron,ParameterValue='${Cron}'"
+Parameters="ParameterKey=URI,ParameterValue=${URI} ParameterKey=Env,ParameterValue=${Env} ParameterKey=Cron,ParameterValue='${Cron}' ParameterKey=AcmArn,ParameterValue=${AcmArn} ParameterKey=Url,ParameterValue=${Url} ParameterKey=HostedZoneId,ParameterValue=${HostedZoneId}"
 
 sam build -t ./template.yml --parameter-overrides "${Parameters}"
 sam deploy \
@@ -24,7 +35,8 @@ sam deploy \
 	--stack-name ${URI} \
 	--disable-rollback \
 	--resolve-s3 \
-	--image-repositories Lambda=${LambdaECR} \
+	--image-repositories LambdaCron=${LambdaECR} \
+	--image-repositories LambdaApi=${LambdaECR} \
 	--parameter-overrides "${Parameters}" \
 	--capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
 	--tags project=${Project} env=${Env} creator=${GitUsername}
