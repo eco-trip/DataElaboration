@@ -22,6 +22,9 @@ Parameters:
   HostedZoneId:
     Type: String
     Description: Hosted zone Id on route 53
+  JwtSecret:
+    Type: String
+    Description: The secret to sign Json Web Token
 
 Resources:
   Api:
@@ -45,8 +48,8 @@ Resources:
     DependsOn: LamdaApiLogGroup
     Metadata:
       Dockerfile: Dockerfile
-      DockerContext: '../api/'
-      DockerTag: nodejs14.x-v1
+      DockerContext: './'
+      DockerTag: latest
     Properties:
       FunctionName: !Sub '${URI}-lambda-api'
       PackageType: Image
@@ -73,6 +76,7 @@ Resources:
       Environment:
         Variables:
           Env: !Ref Env
+          GUEST_JWT_SECRET: !Ref JwtSecret
       Events:
         APIEvent:
           Type: Api

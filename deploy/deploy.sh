@@ -18,6 +18,7 @@ fi
 # GET SECTRETS
 AcmArn=$(echo ${Secrets} | jq .SecretString | jq -rc . | jq -rc '.AcmArn')
 HostedZoneId=$(echo ${Secrets} | jq .SecretString | jq -rc . | jq -rc '.HostedZoneId')
+GUEST_JWT_SECRET=$(echo ${Secrets} | jq .SecretString | jq -rc . | jq -rc '.GUEST_JWT_SECRET')
 
 # GET URL FROM S3 AND SET VARIABLES
 aws s3 cp ${Urls} ./urls.json
@@ -27,7 +28,7 @@ if [ "$Env" = "dev" ]; then
 fi
 
 # SAM BUILD AND DEPLOY
-Parameters="ParameterKey=URI,ParameterValue=${URI} ParameterKey=Env,ParameterValue=${Env} ParameterKey=Cron,ParameterValue='${Cron}' ParameterKey=AcmArn,ParameterValue=${AcmArn} ParameterKey=Url,ParameterValue=${Url} ParameterKey=HostedZoneId,ParameterValue=${HostedZoneId}"
+Parameters="ParameterKey=URI,ParameterValue=${URI} ParameterKey=Env,ParameterValue=${Env} ParameterKey=Cron,ParameterValue='${Cron}' ParameterKey=AcmArn,ParameterValue=${AcmArn} ParameterKey=Url,ParameterValue=${Url} ParameterKey=HostedZoneId,ParameterValue=${HostedZoneId} ParameterKey=JwtSecret,ParameterValue=${GUEST_JWT_SECRET}"
 
 sam build -t ./template.yml --parameter-overrides "${Parameters}"
 sam deploy \

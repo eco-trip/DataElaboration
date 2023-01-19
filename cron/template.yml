@@ -24,7 +24,7 @@ Resources:
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: './'
-      DockerTag: nodejs14.x-v1
+      DockerTag: latest
     Properties:
       FunctionName: !Sub '${URI}-lambda-cron'
       PackageType: Image

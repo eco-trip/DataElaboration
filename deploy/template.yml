@@ -25,6 +25,9 @@ Parameters:
   HostedZoneId:
     Type: String
     Description: Hosted zone Id on route 53
+  JwtSecret:
+    Type: String
+    Description: The secret to sign Json Web Token
 
 Resources:
   DataElaborationCron:
@@ -50,3 +53,4 @@ Resources:
         Url: !Ref Url
         AcmArn: !Ref AcmArn
         HostedZoneId: !Ref HostedZoneId
+        JwtSecret: !Ref JwtSecret

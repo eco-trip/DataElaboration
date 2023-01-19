@@ -1,5 +1,9 @@
 {
-  "name": "data-elaboration-api",
-  "author": "Matteo Brocca, Alan Mancini, Alberto Marfoglia",
-  "description": "Data Elaboration Api"
+	"name": "data-elaboration-api",
+	"author": "Matteo Brocca, Alan Mancini, Alberto Marfoglia",
+	"description": "Data Elaboration Api",
+	"dependencies": {
+		"@aws-sdk/client-dynamodb": "^3.252.0",
+		"jsonwebtoken": "^9.0.0"
+	}
 }
