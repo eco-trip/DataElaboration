@@ -1,4 +1,32 @@
+const dotenv = require('dotenv');
+const fs = require('fs');
+const path = require('path');
 const jwt = require('jsonwebtoken');
+const { DynamoDBClient, QueryCommand } = require('@aws-sdk/client-dynamodb');
+
+if (process.env.Env === 'local' && fs.existsSync(path.resolve(__dirname, '.env.development'))) {
+	dotenv.config({ path: path.resolve(__dirname, '.env.development') });
+} else {
+	dotenv.config();
+}
+
+const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, Env, GUEST_JWT_SECRET } = process.env;
+
+let client;
+
+if (Env === 'local') {
+	client = new DynamoDBClient({
+		credentials: {
+			accessKeyId: AWS_ACCESS_KEY_ID,
+			secretAccessKey: AWS_SECRET_ACCESS_KEY
+		},
+		region: AWS_DEFAULT_REGION
+	});
+} else {
+	client = new DynamoDBClient({ region: AWS_DEFAULT_REGION });
+}
+
+const TableName = 'ecotrip.staging.administration';
 
 const response = (statusCode, txt) => {
 	if (statusCode >= 400) {
@@ -13,20 +41,40 @@ const response = (statusCode, txt) => {
 };
 
 exports.handler = async (event, context) => {
-	console.log('event', event);
-	console.log('Env', process.env.Env);
+	console.log('Env', Env);
 
 	const authHeader = event.headers.Authorization;
 	const token = authHeader && authHeader.split(' ')[1];
 
 	if (token == null) return response(400, 'Missing token');
 
+	let decoded;
+
 	try {
-		const decoded = jwt.verify(token, process.env.GUEST_JWT_SECRET);
+		decoded = jwt.verify(token, GUEST_JWT_SECRET);
 		console.log('decoded', decoded);
 	} catch (err) {
 		return response(401, 'Unauthorized');
 	}
 
-	return response(200, '[API] Lambda execute successful!');
+	const params = {
+		TableName,
+		IndexName: 'skIndex',
+		Limit: 1,
+		KeyConditionExpression: 'sk = :sk_value',
+		ExpressionAttributeValues: {
+			':sk_value': { S: 'STAY#' + decoded.stayId }
+		}
+	};
+
+	console.log('params', params);
+
+	try {
+		const result = await client.send(new QueryCommand(params));
+		if (result.Count === 0) return response(400, 'Not Found');
+
+		return response(200, result.Items[0]);
+	} catch (error) {
+		return response(500, error);
+	}
 };

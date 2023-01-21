@@ -76,7 +76,9 @@ $RECYCLE.BIN/
 
 node_modules
 cron/node_modules
+cron/.env.development
 api/node_modules
+api/.env.development
 
 deploy/.aws-sam
 deploy/urls.json

@@ -41,3 +41,20 @@ sam deploy \
 	--parameter-overrides "${Parameters}" \
 	--capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
 	--tags project=${Project} env=${Env} creator=${GitUsername}
+
+if [ "$Env" = "dev" ]; then
+	AWS_ACCESS_KEY_ID=$(echo ${Secrets} | jq .SecretString | jq -rc . | jq -rc '.AWS_ACCESS_KEY_ID')
+	AWS_SECRET_ACCESS_KEY=$(echo ${Secrets} | jq .SecretString | jq -rc . | jq -rc '.AWS_SECRET_ACCESS_KEY')
+
+	echo "Env=local" >>../api/.env.development
+	echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >>../api/.env.development
+	echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >>../api/.env.development
+	echo "GUEST_JWT_SECRET=${GUEST_JWT_SECRET}" >>../api/.env.development
+	echo "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}" >>../api/.env.development
+
+	echo "Env=local" >>../cron/.env.development
+	echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >>../cron/.env.development
+	echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >>../cron/.env.development
+	echo "GUEST_JWT_SECRET=${GUEST_JWT_SECRET}" >>../cron/.env.development
+	echo "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}" >>../cron/.env.development
+fi

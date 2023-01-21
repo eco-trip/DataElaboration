@@ -1,22 +1,16 @@
 # DataElaboration
 
-Data Elaboration Service as AWS Lambda with Docker container triggered by Cron
+Data Elaboration Service composed by:
+
+- AWS Lambda with Docker container triggered by Cron to elavborate aggregate data
+- AWS Api gateway for REST API endpont to retrive Data by JWT
 
 ## Local development
 
-To build your application locally on your machine, enter:
+To test your application locally on your machine, run:
 
 ```sh
-cd deploy
-sam build \
-	-t ./template.yml \
-	--parameter-overrides \
-	ParameterKey=URI,ParameterValue=ecotrip-des-local \
-	ParameterKey=Env,ParameterValue=dev
+npm run local
 ```
 
-To test the code by locally invoking the Lambda using the following command:
-
-```sh
-sam local invoke Lambda
-```
+On `api` or `cron` folder, remember to change relative `event.json` according to your need and data
