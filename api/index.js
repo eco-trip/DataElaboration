@@ -10,18 +10,20 @@ if (process.env.Env === 'local' && fs.existsSync(path.resolve(__dirname, '.env.d
 	dotenv.config();
 }
 
-const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, Env, GUEST_JWT_SECRET } = process.env;
+const { Env, AWS_DEFAULT_REGION, GUEST_JWT_SECRET } = process.env;
 
 let client;
 
 if (Env === 'local') {
 	client = new DynamoDBClient({
 		credentials: {
-			accessKeyId: AWS_ACCESS_KEY_ID,
-			secretAccessKey: AWS_SECRET_ACCESS_KEY
+			accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+			secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 		},
 		region: AWS_DEFAULT_REGION
 	});
+} else if (Env === 'test') {
+	client = new DynamoDBClient({ region: AWS_DEFAULT_REGION, endpoint: process.env.DYNAMODB_ENDPOINT });
 } else {
 	client = new DynamoDBClient({ region: AWS_DEFAULT_REGION });
 }
@@ -44,6 +46,7 @@ exports.handler = async (event, context) => {
 	console.log('Env', Env);
 
 	const authHeader = event.headers.Authorization;
+
 	const token = authHeader && authHeader.split(' ')[1];
 
 	if (token == null) return response(400, 'Missing token');
