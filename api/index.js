@@ -2,7 +2,7 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
-const { DynamoDBClient, QueryCommand } = require('@aws-sdk/client-dynamodb');
+const { QueryCommand } = require('@aws-sdk/client-dynamodb');
 
 if (process.env.Env === 'local' && fs.existsSync(path.resolve(__dirname, '.env.development'))) {
 	dotenv.config({ path: path.resolve(__dirname, '.env.development') });
@@ -10,25 +10,8 @@ if (process.env.Env === 'local' && fs.existsSync(path.resolve(__dirname, '.env.d
 	dotenv.config();
 }
 
-const { Env, AWS_DEFAULT_REGION, GUEST_JWT_SECRET } = process.env;
-
-let client;
-
-if (Env === 'local') {
-	client = new DynamoDBClient({
-		credentials: {
-			accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-			secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-		},
-		region: AWS_DEFAULT_REGION
-	});
-} else if (Env === 'test') {
-	client = new DynamoDBClient({ region: AWS_DEFAULT_REGION, endpoint: process.env.DYNAMODB_ENDPOINT });
-} else {
-	client = new DynamoDBClient({ region: AWS_DEFAULT_REGION });
-}
-
-const TableName = 'ecotrip.staging.administration';
+const { Env, TableName, GUEST_JWT_SECRET } = process.env;
+const { db } = require('./db/connect');
 
 const response = (statusCode, txt) => {
 	if (statusCode >= 400) {
@@ -73,7 +56,7 @@ exports.handler = async (event, context) => {
 	console.log('params', params);
 
 	try {
-		const result = await client.send(new QueryCommand(params));
+		const result = await db.send(new QueryCommand(params));
 		if (result.Count === 0) return response(400, 'Not Found');
 
 		return response(200, result.Items[0]);

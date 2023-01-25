@@ -7,7 +7,7 @@ Data Elaboration Service composed by:
 
 ## Local development
 
-To test your application locally on your machine, run:
+To test your application locally on your machine, compile `TableName`in your .env.development file and then run:
 
 ```sh
 npm run local
