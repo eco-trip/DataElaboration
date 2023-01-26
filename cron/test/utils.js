@@ -1,82 +1,15 @@
 const { CreateTableCommand, DeleteTableCommand, BatchWriteItemCommand } = require('@aws-sdk/client-dynamodb');
+const { schemas } = require('../db/tables');
 
-const { TableName } = process.env;
-
-exports.CreateTable = async db => {
+exports.CreateTable = async (db, table) => {
 	try {
-		await db.send(new DeleteTableCommand({ TableName }));
+		await db.send(new DeleteTableCommand({ TableName: table }));
 	} catch (e) {
-		console.log('nothing to delete');
+		console.log(`${table} not exist`);
 	}
 
-	const params = {
-		TableName,
-		KeySchema: [
-			{
-				AttributeName: 'roomId',
-				KeyType: 'HASH'
-			},
-			{
-				AttributeName: 'timestamp',
-				KeyType: 'RANGE'
-			}
-		],
-		AttributeDefinitions: [
-			{
-				AttributeName: 'roomId',
-				AttributeType: 'S'
-			},
-			{
-				AttributeName: 'timestamp',
-				AttributeType: 'N'
-			},
-			{
-				AttributeName: 'processed',
-				AttributeType: 'N'
-			}
-		],
-		ProvisionedThroughput: {
-			ReadCapacityUnits: 5,
-			WriteCapacityUnits: 5
-		},
-		GlobalSecondaryIndexes: [
-			{
-				IndexName: 'timestamp-index',
-				KeySchema: [
-					{
-						AttributeName: 'timestamp',
-						KeyType: 'HASH'
-					}
-				],
-				Projection: {
-					ProjectionType: 'ALL'
-				},
-				ProvisionedThroughput: {
-					ReadCapacityUnits: 5,
-					WriteCapacityUnits: 5
-				}
-			},
-			{
-				IndexName: 'processed-index',
-				KeySchema: [
-					{
-						AttributeName: 'processed',
-						KeyType: 'HASH'
-					}
-				],
-				Projection: {
-					ProjectionType: 'ALL'
-				},
-				ProvisionedThroughput: {
-					ReadCapacityUnits: 5,
-					WriteCapacityUnits: 5
-				}
-			}
-		]
-	};
-
 	try {
-		await db.send(new CreateTableCommand(params));
+		await db.send(new CreateTableCommand({ TableName: table, ...schemas[table] }));
 
 		return Promise.resolve();
 	} catch (error) {
@@ -84,7 +17,7 @@ exports.CreateTable = async db => {
 	}
 };
 
-exports.InsertItems = async (db, items) => {
+exports.InsertItems = async (db, table, items) => {
 	const requests = items.map(item => ({
 		PutRequest: {
 			Item: item
@@ -95,7 +28,7 @@ exports.InsertItems = async (db, items) => {
 		RequestItems: {}
 	};
 
-	params.RequestItems[TableName] = requests;
+	params.RequestItems[table] = requests;
 
 	try {
 		await db.send(new BatchWriteItemCommand(params));
@@ -105,3 +38,27 @@ exports.InsertItems = async (db, items) => {
 		return Promise.reject(error);
 	}
 };
+
+const getRandom = (min, max, decimals = 2) => parseFloat(Math.random() * (max - min) + min).toFixed(decimals);
+
+const now = new Date();
+
+const row = (i, { roomId, hotelId, stayId, processed }) => {
+	const timestamp = (now.getTime() - 1000 * i) / 1000;
+
+	const obj = {
+		roomId: { S: roomId },
+		timestamp: { N: timestamp },
+		processed: { N: processed },
+		hotelId: { S: hotelId },
+		measures: {
+			M: { watt: { N: getRandom(5, 15) }, h2o: { N: getRandom(5, 15) } }
+		}
+	};
+
+	if (stayId) obj.stayId = { S: stayId };
+
+	return obj;
+};
+
+exports.generateRawData = (n, info) => [...Array(n).keys()].map(i => row(i, info));

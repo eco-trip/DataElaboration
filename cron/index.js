@@ -1,7 +1,6 @@
 const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
-const { QueryCommand } = require('@aws-sdk/client-dynamodb');
 
 if (process.env.Env === 'local' && fs.existsSync(path.resolve(__dirname, '.env.development'))) {
 	dotenv.config({ path: path.resolve(__dirname, '.env.development') });
@@ -9,8 +8,8 @@ if (process.env.Env === 'local' && fs.existsSync(path.resolve(__dirname, '.env.d
 	dotenv.config();
 }
 
-const { Env, TableName } = process.env;
-const { db } = require('./db/connect');
+const { Env } = process.env;
+const { queryDataToProcess, getHotelInfo } = require('./helpers/lib');
 
 const response = (statusCode, txt) => {
 	if (statusCode >= 400) {
@@ -27,24 +26,19 @@ const response = (statusCode, txt) => {
 exports.handler = async (event, context) => {
 	console.log('Env', Env);
 
-	const params = {
-		TableName,
-		IndexName: 'processed-index',
-		KeyConditionExpression: '#p = :processed_value',
-		ExpressionAttributeNames: {
-			'#p': 'processed'
-		},
-		ExpressionAttributeValues: {
-			':processed_value': { N: 0 }
-		}
-	};
-
 	try {
-		const result = await db.send(new QueryCommand(params));
-		if (result.Count === 0) return response(400, 'Not Found');
-
-		return response(200, result.Items);
+		const result = await queryDataToProcess();
+		console.log('source', result);
 	} catch (error) {
 		return response(500, error);
 	}
+
+	try {
+		const hotel = await getHotelInfo('1');
+		console.log('hotel', hotel);
+	} catch (error) {
+		return response(500, error);
+	}
+
+	return response(200, 'ok');
 };

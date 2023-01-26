@@ -1,16 +1,16 @@
 const { CreateTableCommand, DeleteTableCommand, BatchWriteItemCommand } = require('@aws-sdk/client-dynamodb');
 
-const { TableName } = process.env;
+const { SOURCE_TABLE } = process.env;
 
 exports.CreateTable = async db => {
 	try {
-		await db.send(new DeleteTableCommand({ TableName }));
+		await db.send(new DeleteTableCommand({ TableName: SOURCE_TABLE }));
 	} catch (e) {
 		console.log('nothing to delete');
 	}
 
 	const params = {
-		TableName,
+		TableName: SOURCE_TABLE,
 		KeySchema: [
 			{
 				AttributeName: 'roomId',
@@ -95,7 +95,7 @@ exports.InsertItems = async (db, items) => {
 		RequestItems: {}
 	};
 
-	params.RequestItems[TableName] = requests;
+	params.RequestItems[SOURCE_TABLE] = requests;
 
 	try {
 		await db.send(new BatchWriteItemCommand(params));

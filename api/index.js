@@ -10,7 +10,7 @@ if (process.env.Env === 'local' && fs.existsSync(path.resolve(__dirname, '.env.d
 	dotenv.config();
 }
 
-const { Env, TableName, GUEST_JWT_SECRET } = process.env;
+const { Env, SOURCE_TABLE, GUEST_JWT_SECRET } = process.env;
 const { db } = require('./db/connect');
 
 const response = (statusCode, txt) => {
@@ -44,7 +44,7 @@ exports.handler = async (event, context) => {
 	}
 
 	const params = {
-		TableName,
+		TableName: SOURCE_TABLE,
 		IndexName: 'skIndex',
 		Limit: 1,
 		KeyConditionExpression: 'sk = :sk_value',
