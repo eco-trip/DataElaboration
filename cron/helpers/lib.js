@@ -3,11 +3,20 @@ const { QueryCommand } = require('@aws-sdk/client-dynamodb');
 const { SOURCE_TABLE, HOTEL_TABLE } = process.env;
 const { db } = require('../db/connect');
 
+const cleanObj = obj =>
+	Object.keys(obj).reduce((n, key) => {
+		const [type] = Object.keys(obj[key]);
+		const [value] = Object.values(obj[key]);
+		n[key] = type === 'N' ? parseFloat(value) : value;
+		return n;
+	}, {});
+
 exports.queryDataToProcess = async () => {
 	const params = {
 		TableName: SOURCE_TABLE,
 		IndexName: 'processed-index',
 		KeyConditionExpression: '#p = :processed_value',
+		FilterExpression: 'attribute_exists(stayId)',
 		ExpressionAttributeNames: {
 			'#p': 'processed'
 		},
@@ -19,7 +28,7 @@ exports.queryDataToProcess = async () => {
 	try {
 		const result = await db.send(new QueryCommand(params));
 
-		return Promise.resolve(result.Items);
+		return Promise.resolve(result.Items.map(item => cleanObj(item)));
 	} catch (error) {
 		return Promise.reject(error);
 	}
@@ -41,16 +50,7 @@ exports.getHotelInfo = async hotelId => {
 
 		if (result.Count === 0) return Promise.resolve(false);
 
-		const parsed = Object.keys(result.Items[0]).reduce((obj, key) => {
-			const [type] = Object.keys(result.Items[0][key]);
-			const [value] = Object.values(result.Items[0][key]);
-			obj[key] = type === 'N' ? parseFloat(value) : value;
-			return obj;
-		}, {});
-
-		console.log('parsed', parsed);
-
-		return Promise.resolve(parsed);
+		return Promise.resolve(cleanObj(result.Items[0]));
 	} catch (error) {
 		return Promise.reject(error);
 	}

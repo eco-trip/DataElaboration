@@ -38,12 +38,47 @@ describe('[LIB] Query data to process', () => {
 		await InsertItems(
 			db,
 			SOURCE_TABLE,
-			generateRawData(5, { roomId: 'ROOM#2', hotelId: 'HOTEL#1', stayId: 'STAY#2', processed: 0 })
+			generateRawData(5, { roomId: 'ROOM#2', hotelId: 'HOTEL#2', stayId: 'STAY#2', processed: 0 })
 		);
 
 		const result = await queryDataToProcess();
 		expect(result.length).toBe(5);
 	});
+
+	test('Raw data to process should be a list excluding already processed and without stayId', async () => {
+		await InsertItems(
+			db,
+			SOURCE_TABLE,
+			generateRawData(5, { roomId: 'ROOM#1', hotelId: 'HOTEL#1', stayId: 'STAY#1', processed: 1 })
+		);
+		await InsertItems(db, SOURCE_TABLE, generateRawData(5, { roomId: 'ROOM#2', hotelId: 'HOTEL#1', processed: 0 }));
+		await InsertItems(
+			db,
+			SOURCE_TABLE,
+			generateRawData(10, { roomId: 'ROOM#3', hotelId: 'HOTEL#1', stayId: 'STAY#1', processed: 0 })
+		);
+
+		const result = await queryDataToProcess();
+		expect(result.length).toBe(10);
+	});
+
+	/*
+	test('Raw data to process should be a list excluding already processed and without stayId ', async () => {
+		await InsertItems(
+			db,
+			SOURCE_TABLE,
+			generateRawData(5, { roomId: 'ROOM#1', hotelId: 'HOTEL#1', stayId: 'stay', processed: 0 })
+		);
+		await InsertItems(
+			db,
+			SOURCE_TABLE,
+			generateRawData(5, { roomId: 'ROOM#1', hotelId: 'HOTEL#1', stayId: 'STAY#1', processed: 1 })
+		);
+
+		const result = await queryDataToProcess();
+		expect(result.length).toBe(10);
+	});
+	*/
 });
 
 describe('[LIB] Get Hotel info', () => {
@@ -67,21 +102,21 @@ describe('[LIB] Get Hotel info', () => {
 	});
 });
 
-test.skip('cazzo', async () => {
-	const event = {};
-	const context = {};
+describe('[CRON] lambda test', () => {
+	test('proviamo', async () => {
+		await InsertItems(
+			db,
+			SOURCE_TABLE,
+			generateRawData(10, { roomId: 'ROOM#1', hotelId: 'HOTEL#1', stayId: 'STAY#1', processed: 0 })
+		);
+		await InsertItems(
+			db,
+			SOURCE_TABLE,
+			generateRawData(5, { roomId: 'ROOM#2', hotelId: 'HOTEL#2', stayId: 'STAY#2', processed: 0 })
+		);
 
-	await InsertItems(
-		db,
-		SOURCE_TABLE,
-		generateRawData(10, { roomId: 'ROOM#1', hotelId: 'HOTEL#1', stayId: 'STAY#1', processed: 0 })
-	);
-	await InsertItems(
-		db,
-		SOURCE_TABLE,
-		generateRawData(5, { roomId: 'ROOM#2', hotelId: 'HOTEL#1', stayId: 'STAY#2', processed: 0 })
-	);
+		const result = await handler({}, {});
 
-	const result = await handler(event, context);
-	expect(result.statusCode).toBe(200);
+		expect(result.statusCode).toBe(200);
+	});
 });
