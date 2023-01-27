@@ -16,6 +16,18 @@ Parameters:
       - dev
       - production
       - staging
+  Project:
+    Type: String
+    Description: The name of the project
+  Target:
+    Type: String
+    Description: The target application name
+  SourceTable:
+    Type: String
+    Description: The name of the table where retrive data
+  HotelTable:
+    Type: String
+    Description: The name of the administration table whit hotels data
 
 Resources:
   LambdaCron:
@@ -51,6 +63,10 @@ Resources:
       Environment:
         Variables:
           Env: !Ref Env
+          Project: !Ref Project
+          Target: !Ref Target
+          SOURCE_TABLE: !Ref SourceTable
+          HOTEL_TABLE: !Ref HotelTable
 
   LamdaLogGroup:
     Type: 'AWS::Logs::LogGroup'

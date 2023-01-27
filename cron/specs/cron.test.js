@@ -1,26 +1,23 @@
 const { handler } = require('../index');
-const { CreateTable, InsertItems, generateRawData } = require('../test/utils');
-const { db } = require('../db/connect');
+require('../db/connect');
+
+const { clear } = require('../test/clear');
+const { generateRawData } = require('../test/utils');
 const { queryDataToProcess, getHotelInfo } = require('../helpers/lib');
 
-const { SOURCE_TABLE, DEST_TABLE, HOTEL_TABLE } = process.env;
+const { Elaboration } = require('../model/Elaboration');
+const { Source } = require('../model/Source');
+const { Hotel } = require('../model/Hotel');
 
 beforeAll(async () => {
-	await CreateTable(db, HOTEL_TABLE);
-	await InsertItems(db, HOTEL_TABLE, [
-		{ pk: { S: 'HOTEL#1' }, sk: { S: 'METADATA#1' }, electricityCost: { N: 10 }, hotWaterCost: { N: 5 } }
-	]);
-	await InsertItems(db, HOTEL_TABLE, [
-		{ pk: { S: 'HOTEL#2' }, sk: { S: 'METADATA#2' }, electricityCost: { N: 46.25 }, hotWaterCost: { N: 12.6 } }
+	await Hotel.batchPut([
+		{ pk: 'HOTEL#1', sk: 'METADATA#1', electricityCost: 10, hotWaterCost: 5 },
+		{ pk: 'HOTEL#2', sk: 'METADATA#2', electricityCost: 46.25, hotWaterCost: 12.6 }
 	]);
 });
+
 beforeEach(async () => {
-	try {
-		await CreateTable(db, SOURCE_TABLE);
-		await CreateTable(db, DEST_TABLE);
-	} catch (e) {
-		console.log('beforeEach error:', e);
-	}
+	await clear();
 });
 
 describe('[LIB] Query data to process', () => {
@@ -30,55 +27,25 @@ describe('[LIB] Query data to process', () => {
 	});
 
 	test('Raw data to process should be a list excluding already processed', async () => {
-		await InsertItems(
-			db,
-			SOURCE_TABLE,
-			generateRawData(10, { roomId: 'ROOM#1', hotelId: 'HOTEL#1', stayId: 'STAY#1', processed: 1 })
-		);
-		await InsertItems(
-			db,
-			SOURCE_TABLE,
-			generateRawData(5, { roomId: 'ROOM#2', hotelId: 'HOTEL#2', stayId: 'STAY#2', processed: 0 })
-		);
+		await Source.batchPut([
+			...generateRawData(10, { roomId: 'ROOM#1', hotelId: '1', stayId: 'STAY#1', processed: 1 }),
+			...generateRawData(5, { roomId: 'ROOM#2', hotelId: '2', stayId: 'STAY#2', processed: 0 })
+		]);
 
 		const result = await queryDataToProcess();
 		expect(result.length).toBe(5);
 	});
 
 	test('Raw data to process should be a list excluding already processed and without stayId', async () => {
-		await InsertItems(
-			db,
-			SOURCE_TABLE,
-			generateRawData(5, { roomId: 'ROOM#1', hotelId: 'HOTEL#1', stayId: 'STAY#1', processed: 1 })
-		);
-		await InsertItems(db, SOURCE_TABLE, generateRawData(5, { roomId: 'ROOM#2', hotelId: 'HOTEL#1', processed: 0 }));
-		await InsertItems(
-			db,
-			SOURCE_TABLE,
-			generateRawData(10, { roomId: 'ROOM#3', hotelId: 'HOTEL#1', stayId: 'STAY#1', processed: 0 })
-		);
+		await Source.batchPut([
+			...generateRawData(5, { roomId: 'ROOM#1', hotelId: '1', stayId: 'STAY#1', processed: 1 }),
+			...generateRawData(5, { roomId: 'ROOM#2', hotelId: '1', processed: 0 }),
+			...generateRawData(10, { roomId: 'ROOM#3', hotelId: '1', stayId: 'STAY#1', processed: 0 })
+		]);
 
 		const result = await queryDataToProcess();
 		expect(result.length).toBe(10);
 	});
-
-	/*
-	test('Raw data to process should be a list excluding already processed and without stayId ', async () => {
-		await InsertItems(
-			db,
-			SOURCE_TABLE,
-			generateRawData(5, { roomId: 'ROOM#1', hotelId: 'HOTEL#1', stayId: 'stay', processed: 0 })
-		);
-		await InsertItems(
-			db,
-			SOURCE_TABLE,
-			generateRawData(5, { roomId: 'ROOM#1', hotelId: 'HOTEL#1', stayId: 'STAY#1', processed: 1 })
-		);
-
-		const result = await queryDataToProcess();
-		expect(result.length).toBe(10);
-	});
-	*/
 });
 
 describe('[LIB] Get Hotel info', () => {
@@ -103,20 +70,39 @@ describe('[LIB] Get Hotel info', () => {
 });
 
 describe('[CRON] lambda test', () => {
-	test('proviamo', async () => {
-		await InsertItems(
-			db,
-			SOURCE_TABLE,
-			generateRawData(10, { roomId: 'ROOM#1', hotelId: 'HOTEL#1', stayId: 'STAY#1', processed: 0 })
-		);
-		await InsertItems(
-			db,
-			SOURCE_TABLE,
-			generateRawData(5, { roomId: 'ROOM#2', hotelId: 'HOTEL#2', stayId: 'STAY#2', processed: 0 })
-		);
+	test.skip('proviamo', async () => {
+		const m1 = { hot_flow_rate: { N: 0 }, cold_flow_rate: { N: 0 }, current: { N: 0 }, sample_duration: { N: 5 } };
+		const m2 = { hot_flow_rate: { N: 5 }, cold_flow_rate: { N: 5 }, current: { N: 1500 }, sample_duration: { N: 5 } };
+		const m3 = { hot_flow_rate: { N: 4 }, cold_flow_rate: { N: 1 }, current: { N: 600 }, sample_duration: { N: 5 } };
+		const m4 = { hot_flow_rate: { N: 0 }, cold_flow_rate: { N: 0 }, current: { N: 0 }, sample_duration: { N: 5 } };
+		const m5 = { hot_flow_rate: { N: 10 }, cold_flow_rate: { N: 10 }, current: { N: 2000 }, sample_duration: { N: 5 } };
+
+		await Source.batchPut([
+			...generateRawData(1, { roomId: 'ROOM#1', hotelId: '1', stayId: 'STAY#1', processed: 0, measures: m1 }),
+			...generateRawData(1, { roomId: 'ROOM#1', hotelId: '1', stayId: 'STAY#1', processed: 0, measures: m2 }),
+			...generateRawData(1, { roomId: 'ROOM#1', hotelId: '1', stayId: 'STAY#1', processed: 0, measures: m3 }),
+			...generateRawData(1, { roomId: 'ROOM#2', hotelId: '2', stayId: 'STAY#2', processed: 0, measures: m4 }),
+			...generateRawData(1, { roomId: 'ROOM#2', hotelId: '2', stayId: 'STAY#2', processed: 0, measures: m5 })
+		]);
 
 		const result = await handler({}, {});
 
 		expect(result.statusCode).toBe(200);
+
+		/*
+		const params = {
+			TableName: DEST_TABLE,
+			IndexName: 'skIndex',
+			KeyConditionExpression: 'stayId = :stayId',
+			ExpressionAttributeValues: {
+				':stayId': { S: 'STAY#1' }
+			}
+		};
+
+		const check = await db.send(new QueryCommand(params));
+		console.log(check);
+		
+		expect(check.length).toBe(1);
+		*/
 	});
 });

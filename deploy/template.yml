@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
 Parameters:
@@ -28,6 +28,18 @@ Parameters:
   JwtSecret:
     Type: String
     Description: The secret to sign Json Web Token
+  Project:
+    Type: String
+    Description: The name of the project
+  Target:
+    Type: String
+    Description: The target application name
+  SourceTable:
+    Type: String
+    Description: The name of the table where retrive data
+  HotelTable:
+    Type: String
+    Description: The name of the administration table whit hotels data
 
 Resources:
   DataElaborationCron:
@@ -40,6 +52,10 @@ Resources:
         URI: !Ref URI
         Cron: !Ref Cron
         Env: !Ref Env
+        Project: !Ref Project
+        Target: !Ref Target
+        SourceTable: !Ref SourceTable
+        HotelTable: !Ref HotelTable
 
   DataElaborationApi:
     Type: AWS::Serverless::Application

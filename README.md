@@ -7,10 +7,20 @@ Data Elaboration Service composed by:
 
 ## Local development
 
-To test your application locally on your machine, compile `SOURCE_TABLE`in your .env.development file and then run:
+To test your application locally on your machine...
+
+#### Cron
+
+Put env variables `SOURCE_TABLE` and `HOTEL_TABLE` in your .env.development file with the tables that want use to test and then run:
 
 ```sh
 npm run local
 ```
 
-On `api` or `cron` folder, remember to change relative `event.json` according to your need and data
+Remember to change relative `event.json` according to your need and data
+
+#### Api
+
+```sh
+npm run local
+```
