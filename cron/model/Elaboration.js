@@ -32,9 +32,4 @@ const schema = new dynamoose.Schema(
 
 const Elaboration = dynamoose.model('Elaboration', schema);
 
-Elaboration.serializer.add('response', {
-	exclude: ['pk', 'sk'],
-	modify: (serialized, original) => ({ ...serialized })
-});
-
 module.exports.Elaboration = Elaboration;

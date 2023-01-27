@@ -19,14 +19,22 @@ const schema = new dynamoose.Schema({
 	},
 	hotelId: String,
 	stayId: String,
-	measures: Object
+	measures: {
+		type: Object,
+		schema: {
+			room_temperature: Number,
+			humidity: Number,
+			brightness: Number,
+			hot_water_temperature: Number,
+			cold_water_temperature: Number,
+			hot_flow_rate: Number,
+			cold_flow_rate: Number,
+			current: Number,
+			sample_duration: Number
+		}
+	}
 });
 
 const Source = dynamoose.model('Source', schema);
-
-Source.serializer.add('response', {
-	exclude: ['pk', 'sk'],
-	modify: (serialized, original) => ({ ...serialized })
-});
 
 module.exports.Source = Source;

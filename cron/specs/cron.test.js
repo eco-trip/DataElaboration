@@ -2,8 +2,8 @@ const { handler } = require('../index');
 require('../db/connect');
 
 const { clear } = require('../test/clear');
-const { generateRawData } = require('../test/utils');
-const { queryDataToProcess, getHotelInfo } = require('../helpers/lib');
+const { generateRawData, compareElaboration } = require('../test/utils');
+const { queryDataToProcess, getHotelInfo, calculateCo2 } = require('../helpers/lib');
 
 const { Elaboration } = require('../model/Elaboration');
 const { Source } = require('../model/Source');
@@ -70,39 +70,38 @@ describe('[LIB] Get Hotel info', () => {
 });
 
 describe('[CRON] lambda test', () => {
-	test.skip('proviamo', async () => {
-		const m1 = { hot_flow_rate: { N: 0 }, cold_flow_rate: { N: 0 }, current: { N: 0 }, sample_duration: { N: 5 } };
-		const m2 = { hot_flow_rate: { N: 5 }, cold_flow_rate: { N: 5 }, current: { N: 1500 }, sample_duration: { N: 5 } };
-		const m3 = { hot_flow_rate: { N: 4 }, cold_flow_rate: { N: 1 }, current: { N: 600 }, sample_duration: { N: 5 } };
-		const m4 = { hot_flow_rate: { N: 0 }, cold_flow_rate: { N: 0 }, current: { N: 0 }, sample_duration: { N: 5 } };
-		const m5 = { hot_flow_rate: { N: 10 }, cold_flow_rate: { N: 10 }, current: { N: 2000 }, sample_duration: { N: 5 } };
+	test('Data elaboration with new data entry for stay', async () => {
+		const m1 = [
+			{ hot_flow_rate: 0, cold_flow_rate: 0, current: 0, sample_duration: 5 },
+			{ hot_flow_rate: 5, cold_flow_rate: 5, current: 1500, sample_duration: 5 },
+			{ hot_flow_rate: 4, cold_flow_rate: 1, current: 600, sample_duration: 5 }
+		];
+
+		const m2 = [
+			{ hot_flow_rate: 0, cold_flow_rate: 0, current: 0, sample_duration: 5 },
+			{ hot_flow_rate: 10, cold_flow_rate: 10, current: 2000, sample_duration: 5 }
+		];
 
 		await Source.batchPut([
-			...generateRawData(1, { roomId: 'ROOM#1', hotelId: '1', stayId: 'STAY#1', processed: 0, measures: m1 }),
-			...generateRawData(1, { roomId: 'ROOM#1', hotelId: '1', stayId: 'STAY#1', processed: 0, measures: m2 }),
-			...generateRawData(1, { roomId: 'ROOM#1', hotelId: '1', stayId: 'STAY#1', processed: 0, measures: m3 }),
-			...generateRawData(1, { roomId: 'ROOM#2', hotelId: '2', stayId: 'STAY#2', processed: 0, measures: m4 }),
-			...generateRawData(1, { roomId: 'ROOM#2', hotelId: '2', stayId: 'STAY#2', processed: 0, measures: m5 })
+			...generateRawData(3, { roomId: 'ROOM#1', hotelId: '1', stayId: 'STAY#1', processed: 0 }, m1),
+			...generateRawData(2, { roomId: 'ROOM#2', hotelId: '2', stayId: 'STAY#2', processed: 0 }, m2)
 		]);
 
 		const result = await handler({}, {});
-
 		expect(result.statusCode).toBe(200);
 
-		/*
-		const params = {
-			TableName: DEST_TABLE,
-			IndexName: 'skIndex',
-			KeyConditionExpression: 'stayId = :stayId',
-			ExpressionAttributeValues: {
-				':stayId': { S: 'STAY#1' }
-			}
-		};
+		const elaboration = await Elaboration.scan().exec();
+		expect(elaboration.length).toBe(2);
 
-		const check = await db.send(new QueryCommand(params));
-		console.log(check);
-		
-		expect(check.length).toBe(1);
-		*/
+		compareElaboration(elaboration[0], { roomId: 'ROOM#1', hotelId: '1', stayId: 'STAY#1', measures: m1 });
+		expect(elaboration[0].co2).toBe(calculateCo2({ ...elaboration[0], electricityCost: 10, hotWaterCost: 5 }));
+
+		compareElaboration(elaboration[1], { roomId: 'ROOM#2', hotelId: '2', stayId: 'STAY#2', measures: m2 });
+		expect(elaboration[1].co2).toBe(calculateCo2({ ...elaboration[1], electricityCost: 46.25, hotWaterCost: 12.6 }));
+
+		const toProcess = await queryDataToProcess();
+		expect(toProcess.length).toBe(0);
 	});
+
+	test.todo('Data elaboration with already existing stay to update');
 });

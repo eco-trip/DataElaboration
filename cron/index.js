@@ -11,7 +11,9 @@ if (process.env.Env === 'local' && fs.existsSync(path.resolve(__dirname, '.env.d
 const { Env } = process.env;
 require('./db/connect');
 
-const { queryDataToProcess, getHotelInfo } = require('./helpers/lib');
+const { queryDataToProcess, getHotelInfo, normalizeSample, calculatePoint, calculateCo2 } = require('./helpers/lib');
+const { Elaboration } = require('./model/Elaboration');
+const { Source } = require('./model/Source');
 
 const response = (statusCode, txt) => {
 	if (statusCode >= 400) {
@@ -48,9 +50,9 @@ exports.handler = async (event, context) => {
 				samples: 0
 			};
 
-		acc[item.stayId].hot_flow_rate += (item.measures.hot_flow_rate / 3600) * item.measures.sample_duration;
-		acc[item.stayId].cold_flow_rate += (item.measures.cold_flow_rate / 3600) * item.measures.sample_duration;
-		acc[item.stayId].current += (item.measures.current / 3600) * item.measures.sample_duration;
+		acc[item.stayId].hot_flow_rate += normalizeSample(item.measures.hot_flow_rate, item.measures.sample_duration);
+		acc[item.stayId].cold_flow_rate += normalizeSample(item.measures.cold_flow_rate, item.measures.sample_duration);
+		acc[item.stayId].current += normalizeSample(item.measures.current, item.measures.sample_duration);
 		acc[item.stayId].samples += 1;
 
 		return acc;
@@ -61,16 +63,22 @@ exports.handler = async (event, context) => {
 			const hotel = await getHotelInfo(item.hotelId);
 			item.electricityCost = hotel.electricityCost;
 			item.hotWaterCost = hotel.hotWaterCost;
+			item.co2 = calculateCo2(item);
+			item.points = calculatePoint(item);
 
 			return item;
 		}, {})
 	);
 
 	// insert items
+	Elaboration.batchPut(stays);
 
 	// update processed
+	await Promise.all(
+		toProcess.map(async element => {
+			await Source.update({ roomId: element.roomId, timestamp: element.timestamp }, { processed: 1 });
+		})
+	);
 
-	console.log('stays', stays);
-
-	return response(200, 'ok');
+	return response(200, `Data Elaboration of ${toProcess.length} samples Complete`);
 };
