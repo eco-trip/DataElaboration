@@ -1,0 +1,6 @@
+node_modules
+specs
+test
+
+.env.development
+.env.test
