@@ -1,0 +1,99 @@
+{
+  "ecotrip.staging.data": [
+    {
+      "PutRequest": {
+        "Item": {
+          "roomId": { "S": "ROOM#1" },
+          "hotelId": { "S": "1" },
+          "stayId": { "S": "STAY#1" },
+          "processed": { "N": "0" },
+          "timestamp": { "N": "1675078766.307" },
+          "measures": {
+            "M": {
+              "hot_flow_rate": { "N": "0" },
+              "cold_flow_rate": { "N": "0" },
+              "current": { "N": "0" },
+              "sample_duration": { "N": "5" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "roomId": { "S": "ROOM#1" },
+          "hotelId": { "S": "1" },
+          "stayId": { "S": "STAY#1" },
+          "processed": { "N": "0" },
+          "timestamp": { "N": "1675078765.307" },
+          "measures": {
+            "M": {
+              "hot_flow_rate": { "N": "5" },
+              "cold_flow_rate": { "N": "5" },
+              "current": { "N": "1500" },
+              "sample_duration": { "N": "5" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "roomId": { "S": "ROOM#1" },
+          "hotelId": { "S": "1" },
+          "stayId": { "S": "STAY#1" },
+          "processed": { "N": "0" },
+          "timestamp": { "N": "1675078764.307" },
+          "measures": {
+            "M": {
+              "hot_flow_rate": { "N": "4" },
+              "cold_flow_rate": { "N": "1" },
+              "current": { "N": "600" },
+              "sample_duration": { "N": "5" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "roomId": { "S": "ROOM#2" },
+          "hotelId": { "S": "2" },
+          "stayId": { "S": "STAY#2" },
+          "processed": { "N": "0" },
+          "timestamp": { "N": "1675078766.307" },
+          "measures": {
+            "M": {
+              "hot_flow_rate": { "N": "0" },
+              "cold_flow_rate": { "N": "0" },
+              "current": { "N": "0" },
+              "sample_duration": { "N": "5" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "roomId": { "S": "ROOM#2" },
+          "hotelId": { "S": "2" },
+          "stayId": { "S": "STAY#2" },
+          "processed": { "N": "0" },
+          "timestamp": { "N": "1675078765.307" },
+          "measures": {
+            "M": {
+              "hot_flow_rate": { "N": "10" },
+              "cold_flow_rate": { "N": "10" },
+              "current": { "N": "2000" },
+              "sample_duration": { "N": "5" }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

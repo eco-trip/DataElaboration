@@ -1,0 +1,26 @@
+[
+  {
+    "IndexName": "timestamp-index",
+    "KeySchema": [
+      {
+        "AttributeName": "timestamp",
+        "KeyType": "HASH"
+      }
+    ],
+    "Projection": {
+      "ProjectionType": "ALL"
+    }
+  },
+  {
+    "IndexName": "processed-index",
+    "KeySchema": [
+      {
+        "AttributeName": "processed",
+        "KeyType": "HASH"
+      }
+    ],
+    "Projection": {
+      "ProjectionType": "ALL"
+    }
+  }
+]
