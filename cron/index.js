@@ -11,7 +11,14 @@ if (process.env.Env === 'local' && fs.existsSync(path.resolve(__dirname, '.env.d
 const { Env } = process.env;
 require('./db/connect');
 
-const { queryDataToProcess, getHotelInfo, normalizeSample, calculatePoint, calculateCo2 } = require('./helpers/lib');
+const {
+	queryDataToProcess,
+	getHotelInfo,
+	getElaboration,
+	normalizeSample,
+	calculatePoint,
+	calculateCo2
+} = require('./helpers/lib');
 const { Elaboration } = require('./model/Elaboration');
 const { Source } = require('./model/Source');
 
@@ -38,6 +45,7 @@ exports.handler = async (event, context) => {
 		return response(500, error);
 	}
 
+	// aggregation by stayId
 	let stays = toProcess.reduce((acc, item) => {
 		if (!acc[item.stayId])
 			acc[item.stayId] = {
@@ -58,11 +66,23 @@ exports.handler = async (event, context) => {
 		return acc;
 	}, {});
 
+	// process value
 	stays = await Promise.all(
 		Object.values(stays).map(async item => {
 			const hotel = await getHotelInfo(item.hotelId);
 			item.electricityCost = hotel.electricityCost;
 			item.hotWaterCost = hotel.hotWaterCost;
+
+			const elaboration = await getElaboration(item.roomId, item.stayId);
+			if (elaboration) {
+				item.hot_flow_rate += elaboration.hot_flow_rate;
+				item.cold_flow_rate += elaboration.cold_flow_rate;
+				item.current += elaboration.current;
+				item.samples += elaboration.samples;
+				item.co2 = elaboration.co2;
+				item.points = elaboration.points;
+			}
+
 			item.co2 = calculateCo2(item);
 			item.points = calculatePoint(item);
 
@@ -70,7 +90,7 @@ exports.handler = async (event, context) => {
 		}, {})
 	);
 
-	// insert items
+	// save elaboration
 	Elaboration.batchPut(stays);
 
 	// update processed
