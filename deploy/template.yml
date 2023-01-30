@@ -70,3 +70,5 @@ Resources:
         AcmArn: !Ref AcmArn
         HostedZoneId: !Ref HostedZoneId
         JwtSecret: !Ref JwtSecret
+        Project: !Ref Project
+        Target: !Ref Target

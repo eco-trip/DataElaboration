@@ -11,8 +11,8 @@
 		"format:check": "prettier --check **/*.{json,js,yml}"
 	},
 	"dependencies": {
-		"@aws-sdk/client-dynamodb": "^3.252.0",
 		"dotenv": "^16.0.3",
+		"dynamoose": "^3.1.0",
 		"jsonwebtoken": "^9.0.0"
 	},
 	"devDependencies": {
@@ -22,7 +22,7 @@
 		"eslint-plugin-import": "^2.26.0",
 		"eslint-plugin-jest": "^26.8.3",
 		"eslint-plugin-prettier": "^4.2.1",
-		"prettier": "^2.7.1",
-		"jest": "^29.4.0"
+		"jest": "^29.4.0",
+		"prettier": "^2.7.1"
 	}
 }

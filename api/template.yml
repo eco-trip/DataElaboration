@@ -25,6 +25,12 @@ Parameters:
   JwtSecret:
     Type: String
     Description: The secret to sign Json Web Token
+  Project:
+    Type: String
+    Description: The name of the project
+  Target:
+    Type: String
+    Description: The target application name
 
 Resources:
   Api:
