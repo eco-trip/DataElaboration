@@ -45,6 +45,8 @@ exports.handler = async (event, context) => {
 		return response(500, error);
 	}
 
+	if (toProcess.length === 0) return response(200, `Nothing to elaborate`);
+
 	// aggregation by stayId
 	let stays = toProcess.reduce((acc, item) => {
 		if (!acc[item.stayId])
@@ -70,6 +72,11 @@ exports.handler = async (event, context) => {
 	stays = await Promise.all(
 		Object.values(stays).map(async item => {
 			const hotel = await getHotelInfo(item.hotelId);
+			if (!hotel) {
+				console.log(`ERROR: hotelID ${item.hotelId} not found`);
+				return item;
+			}
+
 			item.electricityCost = hotel.electricityCost;
 			item.hotWaterCost = hotel.hotWaterCost;
 

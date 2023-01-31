@@ -70,6 +70,11 @@ describe('[LIB] Get Hotel info', () => {
 });
 
 describe('[CRON] lambda test', () => {
+	test('Data elaboration with no data', async () => {
+		const result = await handler({}, {});
+		expect(result.statusCode).toBe(200);
+	});
+
 	test('Data elaboration with new data entry for stay', async () => {
 		const m1 = [
 			{ hot_flow_rate: 0, cold_flow_rate: 0, current: 0, sample_duration: 5 },
