@@ -21,7 +21,14 @@ const response = (statusCode, txt) => {
 	}
 	return {
 		statusCode,
-		body: JSON.stringify(txt)
+		body: JSON.stringify(txt),
+		headers: {
+			'Content-Type': 'application/json',
+			'Access-Control-Allow-Headers': 'Content-Type',
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+		},
+		isBase64Encoded: false
 	};
 };
 
@@ -35,7 +42,7 @@ exports.handler = async (event, context) => {
 	let decoded;
 	try {
 		decoded = jwt.verify(token, GUEST_JWT_SECRET);
-		console.log('decoded', decoded);
+		console.log('Decoded Token', decoded);
 	} catch (err) {
 		return response(401, { error: 'Unauthorized' });
 	}
