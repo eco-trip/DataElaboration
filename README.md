@@ -21,6 +21,18 @@ Remember to change relative `event.json` according to your need and data
 
 #### Api
 
+Put env variables `SOURCE_TABLE` in your .env.development file with the table that want use to test and then run:
+
 ```sh
 npm run local
 ```
+
+## Dev development
+
+To test environment on AWS as development, run following script on `dynamodb` folder:
+
+```sh
+bash deploy.sh
+```
+
+You can change seed data on relative folders
