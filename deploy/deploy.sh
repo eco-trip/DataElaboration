@@ -21,11 +21,7 @@ HostedZoneId=$(echo ${Secrets} | jq .SecretString | jq -rc . | jq -rc '.HostedZo
 GUEST_JWT_SECRET=$(echo ${Secrets} | jq .SecretString | jq -rc . | jq -rc '.GUEST_JWT_SECRET')
 
 HotelTable="${Project}.${Env}.administration"
-if [ "$Env" = "production" ]; then
-	SourceTable="${Project}.data"
-else
-	SourceTable="${Project}.${Env}.data"
-fi
+SourceTable="${Project}.${Env}.data"
 
 # GET URL FROM S3 AND SET VARIABLES
 aws s3 cp ${Urls} ./urls.json

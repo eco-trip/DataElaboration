@@ -1,7 +1,7 @@
-FROM public.ecr.aws/lambda/nodejs:14
+FROM public.ecr.aws/lambda/nodejs:16
 
-COPY index.js package.json package-lock.json ./
+COPY ./ ./
 
-RUN npm i --omit=dev
+RUN npm ci --omit=dev
 
 CMD ["index.handler"]

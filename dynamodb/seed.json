@@ -1,11 +1,11 @@
 {
-  "ecotrip.staging.data": [
+  "ecotrip.dev.data": [
     {
       "PutRequest": {
         "Item": {
-          "roomId": { "S": "ROOM#1" },
-          "hotelId": { "S": "1" },
-          "stayId": { "S": "STAY#1" },
+          "roomId": { "S": "44a6d570-a0c1-11ed-aa07-0bc397504e23" },
+          "hotelId": { "S": "12da44a0-a0c1-11ed-aa07-0bc397504e23" },
+          "stayId": { "S": "0ef46270-a0c2-11ed-aa07-0bc397504e23" },
           "processed": { "N": "0" },
           "timestamp": { "N": "1675078766.307" },
           "measures": {
@@ -22,9 +22,9 @@
     {
       "PutRequest": {
         "Item": {
-          "roomId": { "S": "ROOM#1" },
-          "hotelId": { "S": "1" },
-          "stayId": { "S": "STAY#1" },
+          "roomId": { "S": "44a6d570-a0c1-11ed-aa07-0bc397504e23" },
+          "hotelId": { "S": "12da44a0-a0c1-11ed-aa07-0bc397504e23" },
+          "stayId": { "S": "0ef46270-a0c2-11ed-aa07-0bc397504e23" },
           "processed": { "N": "0" },
           "timestamp": { "N": "1675078765.307" },
           "measures": {
@@ -41,9 +41,9 @@
     {
       "PutRequest": {
         "Item": {
-          "roomId": { "S": "ROOM#1" },
-          "hotelId": { "S": "1" },
-          "stayId": { "S": "STAY#1" },
+          "roomId": { "S": "44a6d570-a0c1-11ed-aa07-0bc397504e23" },
+          "hotelId": { "S": "12da44a0-a0c1-11ed-aa07-0bc397504e23" },
+          "stayId": { "S": "0ef46270-a0c2-11ed-aa07-0bc397504e23" },
           "processed": { "N": "0" },
           "timestamp": { "N": "1675078764.307" },
           "measures": {
@@ -60,9 +60,9 @@
     {
       "PutRequest": {
         "Item": {
-          "roomId": { "S": "ROOM#2" },
-          "hotelId": { "S": "2" },
-          "stayId": { "S": "STAY#2" },
+          "roomId": { "S": "472235b0-a0c1-11ed-aa07-0bc397504e23" },
+          "hotelId": { "S": "12da44a0-a0c1-11ed-aa07-0bc397504e23" },
+          "stayId": { "S": "472235b0-a0c1-11ed-aa07-0bc397504e23" },
           "processed": { "N": "0" },
           "timestamp": { "N": "1675078766.307" },
           "measures": {
@@ -79,9 +79,9 @@
     {
       "PutRequest": {
         "Item": {
-          "roomId": { "S": "ROOM#2" },
-          "hotelId": { "S": "2" },
-          "stayId": { "S": "STAY#2" },
+          "roomId": { "S": "472235b0-a0c1-11ed-aa07-0bc397504e23" },
+          "hotelId": { "S": "12da44a0-a0c1-11ed-aa07-0bc397504e23" },
+          "stayId": { "S": "472235b0-a0c1-11ed-aa07-0bc397504e23" },
           "processed": { "N": "0" },
           "timestamp": { "N": "1675078765.307" },
           "measures": {
