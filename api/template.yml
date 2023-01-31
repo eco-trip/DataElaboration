@@ -82,6 +82,8 @@ Resources:
       Environment:
         Variables:
           Env: !Ref Env
+          Project: !Ref Project
+          Target: !Ref Target
           GUEST_JWT_SECRET: !Ref JwtSecret
       Events:
         APIEvent:

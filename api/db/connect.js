@@ -23,5 +23,4 @@ if (Env === 'local') {
 }
 
 dynamoose.aws.ddb.set(ddb);
-
 module.exports.ElaborationTable = new dynamoose.Table(`${Project}.${Env}.${Target}`, [Elaboration]);
