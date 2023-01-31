@@ -6,7 +6,7 @@ const now = new Date();
 
 const row = (i, obj, measures) => {
 	const timestamp = (now.getTime() - 1000 * i) / 1000;
-	const ret = { ...obj };
+	const ret = { ...obj, sample_duration: 5 };
 
 	if (!ret.timestamp) ret.timestamp = timestamp;
 	if (measures) ret.measures = { ...measures };
@@ -19,8 +19,7 @@ const row = (i, obj, measures) => {
 			cold_water_temperature: toFixedNumber(getRandom(7, 12)),
 			hot_flow_rate: toFixedNumber(getRandom(0, 5)),
 			cold_flow_rate: toFixedNumber(getRandom(0, 5)),
-			current: toFixedNumber(getRandom(1, 2000)),
-			sample_duration: 5
+			current: toFixedNumber(getRandom(1, 2000))
 		};
 
 	return ret;

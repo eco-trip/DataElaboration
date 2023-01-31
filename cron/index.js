@@ -60,9 +60,9 @@ exports.handler = async (event, context) => {
 				samples: 0
 			};
 
-		acc[item.stayId].hot_flow_rate += normalizeSample(item.measures.hot_flow_rate, item.measures.sample_duration);
-		acc[item.stayId].cold_flow_rate += normalizeSample(item.measures.cold_flow_rate, item.measures.sample_duration);
-		acc[item.stayId].current += normalizeSample(item.measures.current, item.measures.sample_duration);
+		acc[item.stayId].hot_flow_rate += normalizeSample(item.measures.hot_flow_rate, item.sample_duration);
+		acc[item.stayId].cold_flow_rate += normalizeSample(item.measures.cold_flow_rate, item.sample_duration);
+		acc[item.stayId].current += normalizeSample(item.measures.current, item.sample_duration);
 		acc[item.stayId].samples += 1;
 
 		return acc;

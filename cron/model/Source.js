@@ -19,6 +19,7 @@ const schema = new dynamoose.Schema({
 	},
 	hotelId: String,
 	stayId: String,
+	sample_duration: Number,
 	measures: {
 		type: Object,
 		schema: {
@@ -29,8 +30,7 @@ const schema = new dynamoose.Schema({
 			cold_water_temperature: Number,
 			hot_flow_rate: Number,
 			cold_flow_rate: Number,
-			current: Number,
-			sample_duration: Number
+			current: Number
 		}
 	}
 });
