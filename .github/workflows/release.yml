@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Semantic Release
-        uses: eco-trip/semantic-release-action@v1.0
+        uses: eco-trip/semantic-release-action@v1.1
         with:
           token: ${{ secrets.MEBBOT }}
 
