@@ -1,0 +1,14 @@
+[
+  {
+    "AttributeName": "roomId",
+    "AttributeType": "S"
+  },
+  {
+    "AttributeName": "timestamp",
+    "AttributeType": "N"
+  },
+  {
+    "AttributeName": "processed",
+    "AttributeType": "N"
+  }
+]

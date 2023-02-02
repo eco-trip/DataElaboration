@@ -1,0 +1,11 @@
+{
+	"version": "0",
+	"id": "e034cfb4-6254-8097-ac5d-74de02022ee1",
+	"detail-type": "Scheduled Event",
+	"source": "aws.events",
+	"account": "030800513199",
+	"time": "2023-01-25T14:57:38Z",
+	"region": "eu-west-1",
+	"resources": ["arn:aws:events:eu-west-1:030800513199:rule/ecotrip-dev-brteo-data-elaboration-events-rule"],
+	"detail": {}
+}

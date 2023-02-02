@@ -1,0 +1,10 @@
+[
+  {
+    "AttributeName": "roomId",
+    "KeyType": "HASH"
+  },
+  {
+    "AttributeName": "timestamp",
+    "KeyType": "RANGE"
+  }
+]

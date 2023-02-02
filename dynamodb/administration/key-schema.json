@@ -1,0 +1,10 @@
+[
+  {
+    "AttributeName": "pk",
+    "KeyType": "HASH"
+  },
+  {
+    "AttributeName": "sk",
+    "KeyType": "RANGE"
+  }
+]

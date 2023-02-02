@@ -1,0 +1,14 @@
+[
+  {
+    "IndexName": "skIndex",
+    "KeySchema": [
+      {
+        "AttributeName": "sk",
+        "KeyType": "HASH"
+      }
+    ],
+    "Projection": {
+      "ProjectionType": "ALL"
+    }
+  }
+]

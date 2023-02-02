@@ -1,0 +1,14 @@
+{
+  "ecotrip.dev.administration": [
+    {
+      "PutRequest": {
+        "Item": {
+          "pk": { "S": "HOTEL#4cccaf50-9d5f-11ed-90bf-f99203f981bb" },
+          "sk": { "S": "METADATA#4cccaf50-9d5f-11ed-90bf-f99203f981bb" },
+          "electricityCost": { "N": "8" },
+          "hotWaterCost": { "N": "5.5" }
+        }
+      }
+    }
+  ]
+}
