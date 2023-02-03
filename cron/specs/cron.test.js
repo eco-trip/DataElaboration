@@ -9,7 +9,7 @@ const { Elaboration } = require('../model/Elaboration');
 const { Source } = require('../model/Source');
 const { Hotel } = require('../model/Hotel');
 
-const sample_duration = 5;
+const SAMPLE_DURATION = 5;
 
 beforeAll(async () => {
 	await Hotel.batchPut([
@@ -104,12 +104,12 @@ describe('[CRON] lambda test', () => {
 		expect(elaboration[0].stayId).toBe('STAY#1');
 		expect(elaboration[0].hotelId).toBe('1');
 		expect(elaboration[0].samples).toBe(m1.length);
-		expect(elaboration[0].current).toBe(m1.reduce((t, i) => t + normalizeSample(i.current, sample_duration), 0));
+		expect(elaboration[0].current).toBe(m1.reduce((t, i) => t + normalizeSample(i.current, SAMPLE_DURATION), 0));
 		expect(elaboration[0].cold_flow_rate).toBe(
-			m1.reduce((t, i) => t + normalizeSample(i.cold_flow_rate, sample_duration), 0)
+			m1.reduce((t, i) => t + normalizeSample(i.cold_flow_rate, SAMPLE_DURATION), 0)
 		);
 		expect(elaboration[0].hot_flow_rate).toBe(
-			m1.reduce((t, i) => t + normalizeSample(i.hot_flow_rate, sample_duration), 0)
+			m1.reduce((t, i) => t + normalizeSample(i.hot_flow_rate, SAMPLE_DURATION), 0)
 		);
 		expect(elaboration[0].co2).toBe(calculateCo2({ ...elaboration[0], electricityCost: 10, hotWaterCost: 5 }));
 		expect(elaboration[0].points).toBeDefined();
@@ -118,12 +118,12 @@ describe('[CRON] lambda test', () => {
 		expect(elaboration[1].stayId).toBe('STAY#2');
 		expect(elaboration[1].hotelId).toBe('2');
 		expect(elaboration[1].samples).toBe(m2.length);
-		expect(elaboration[1].current).toBe(m2.reduce((t, i) => t + normalizeSample(i.current, sample_duration), 0));
+		expect(elaboration[1].current).toBe(m2.reduce((t, i) => t + normalizeSample(i.current, SAMPLE_DURATION), 0));
 		expect(elaboration[1].cold_flow_rate).toBe(
-			m2.reduce((t, i) => t + normalizeSample(i.cold_flow_rate, sample_duration), 0)
+			m2.reduce((t, i) => t + normalizeSample(i.cold_flow_rate, SAMPLE_DURATION), 0)
 		);
 		expect(elaboration[1].hot_flow_rate).toBe(
-			m2.reduce((t, i) => t + normalizeSample(i.hot_flow_rate, sample_duration), 0)
+			m2.reduce((t, i) => t + normalizeSample(i.hot_flow_rate, SAMPLE_DURATION), 0)
 		);
 		expect(elaboration[1].co2).toBe(calculateCo2({ ...elaboration[1], electricityCost: 46.25, hotWaterCost: 12.6 }));
 		expect(elaboration[1].points).toBeDefined();
@@ -166,13 +166,13 @@ describe('[CRON] lambda test', () => {
 		expect(elaboration[0].hotelId).toBe('1');
 		expect(elaboration[0].samples).toBe(m1.length + history.samples);
 		expect(elaboration[0].current).toBe(
-			m1.reduce((t, i) => t + normalizeSample(i.current, sample_duration), history.current)
+			m1.reduce((t, i) => t + normalizeSample(i.current, SAMPLE_DURATION), history.current)
 		);
 		expect(elaboration[0].cold_flow_rate).toBe(
-			m1.reduce((t, i) => t + normalizeSample(i.cold_flow_rate, sample_duration), history.cold_flow_rate)
+			m1.reduce((t, i) => t + normalizeSample(i.cold_flow_rate, SAMPLE_DURATION), history.cold_flow_rate)
 		);
 		expect(elaboration[0].hot_flow_rate).toBe(
-			m1.reduce((t, i) => t + normalizeSample(i.hot_flow_rate, sample_duration), history.hot_flow_rate)
+			m1.reduce((t, i) => t + normalizeSample(i.hot_flow_rate, SAMPLE_DURATION), history.hot_flow_rate)
 		);
 
 		expect(elaboration[0].co2).toBe(calculateCo2({ ...elaboration[0], electricityCost: 10, hotWaterCost: 5 }));
@@ -180,5 +180,20 @@ describe('[CRON] lambda test', () => {
 
 		const toProcess = await queryDataToProcess();
 		expect(toProcess.length).toBe(0);
+	});
+
+	test.only('Data elaboration floating precision', async () => {
+		const m1 = [
+			{ hot_flow_rate: 0, cold_flow_rate: 0, current: 72 },
+			{ hot_flow_rate: 0, cold_flow_rate: 0, current: 144 }
+		];
+
+		await Source.batchPut(generateRawData(2, { roomId: 'ROOM#1', hotelId: '1', stayId: 'STAY#1', processed: 0 }, m1));
+
+		const result = await handler({}, {});
+		expect(result.statusCode).toBe(200);
+
+		const elaboration = await Elaboration.scan().exec();
+		expect(elaboration[0].current).toBe(0.3);
 	});
 });

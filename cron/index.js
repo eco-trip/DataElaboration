@@ -17,7 +17,8 @@ const {
 	getElaboration,
 	normalizeSample,
 	calculatePoint,
-	calculateCo2
+	calculateCo2,
+	toFixedNumber
 } = require('./helpers/lib');
 const { Elaboration } = require('./model/Elaboration');
 const { Source } = require('./model/Source');
@@ -89,6 +90,13 @@ exports.handler = async (event, context) => {
 				item.co2 = elaboration.co2;
 				item.points = elaboration.points;
 			}
+
+			item.hot_flow_rate = toFixedNumber(item.hot_flow_rate);
+			item.cold_flow_rate = toFixedNumber(item.cold_flow_rate);
+			item.current = toFixedNumber(item.current);
+			item.samples = toFixedNumber(item.samples);
+			item.co2 = toFixedNumber(item.co2);
+			item.points = toFixedNumber(item.points);
 
 			item.co2 = calculateCo2(item);
 			item.points = calculatePoint(item);
